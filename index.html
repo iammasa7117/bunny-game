@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>バニーの進化 - ラウンドバトル</title>
+  <style>
+    body { font-family: sans-serif; background-color: #f8f8f8; padding: 20px; text-align: center; }
+    .btn { margin: 10px; padding: 10px 20px; font-size: 16px; }
+    #log { margin-top: 20px; white-space: pre-line; border-top: 1px solid #ccc; padding-top: 10px; }
+    #bunny-img, #enemy-img { width: 150px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <h1>バニーの進化</h1>
+  <p>レベル: <span id="level">1</span> / EXP: <span id="levelExp">0</span> / 次のレベルまで: <span id="levelThreshold">50</span></p>
+  <img id="bunny-img" src="bunny_softred.png" alt="バニー">
+  <div>
+    <p>HP: <span id="playerHP">100</span> / Enemy: <span id="enemyName">スライム</span> / HP: <span id="enemyHP">50</span></p>
+    <img id="enemy-img" src="slime.png" alt="敵">
+    <p id="enemyMsg">ぷるぷるしてやるぞ！</p>
+    <button class="btn" onclick="attack()">攻撃</button>
+    <button class="btn" onclick="eat()">食べる</button>
+    <button class="btn" onclick="train()">トレーニング</button>
+    <button class="btn" onclick="rest()">休憩</button>
+    <button class="btn" onclick="useSteroid()">ステロイド</button>
+  </div>
+  <div>
+    <p>EXP: <span id="exp">0</span> / Fullness: <span id="fullness">100</span> / Fatigue: <span id="fatigue">0</span> / ステロイド使用: <span id="steroids">0</span></p>
+    <p id="evolutionStatus"></p>
+  </div>
+  <div id="log"></div>
+
+  <script>
+    let playerHP = 100;
+    let exp = 0;
+    let fullness = 100;
+    let fatigue = 0;
+    let steroidCount = 0;
+    let evolved = false;
+    let level = 1;
+    let levelExp = 0;
+    let levelThreshold = 50;
+    let currentEnemyIndex = 0;
+
+    const enemies = [
+      { name: "スライム", hp: 50, atk: 5, img: "slime.png", msg: "ぷるぷるしてやるぞ！" },
+      { name: "カメガード", hp: 80, atk: 10, img: "turtle.png", msg: "おまえに突破できるか…？" },
+      { name: "ファイアキャット", hp: 120, atk: 20, img: "firecat.png", msg: "ここから先には行かせない！" }
+    ];
+    let enemyHP = enemies[currentEnemyIndex].hp;
+
+    function updateUI() {
+      document.getElementById('playerHP').innerText = playerHP;
+      document.getElementById('enemyHP').innerText = enemyHP;
+      document.getElementById('enemyName').innerText = enemies[currentEnemyIndex].name;
+      document.getElementById('enemy-img').src = enemies[currentEnemyIndex].img;
+      document.getElementById('enemyMsg').innerText = enemies[currentEnemyIndex].msg;
+      document.getElementById('exp').innerText = exp;
+      document.getElementById('fullness').innerText = fullness;
+      document.getElementById('fatigue').innerText = fatigue;
+      document.getElementById('steroids').innerText = steroidCount;
+      document.getElementById('level').innerText = level;
+      document.getElementById('levelExp').innerText = levelExp;
+      document.getElementById('levelThreshold').innerText = levelThreshold;
+
+      if (!evolved && exp >= 50 && fullness >= 50 && fatigue <= 30 && steroidCount < 3) {
+        evolved = true;
+        document.getElementById('evolutionStatus').innerText = 'バニーはアングリーバニーに進化した！🔥';
+        document.getElementById('bunny-img').src = 'angry_bunny_softred.png';
+        log("\n🔥 進化しました！攻撃力が2倍になります！");
+      } else if (!evolved && steroidCount >= 3) {
+        evolved = true;
+        document.getElementById('evolutionStatus').innerText = 'バニーは暴走バニーに闇堕ちした…💀';
+        document.getElementById('bunny-img').src = 'rage_bunny.png';
+        log("\n💀 ステロイドの使いすぎでバニーが暴走した！！");
+      }
+    }
+
+    function log(msg) {
+      document.getElementById('log').innerText += msg + "\n";
+    }
+
+    
+function attack() {
+  if (!isPlayerTurn || playerHP <= 0 || enemyHP <= 0) return;
+
+      let damage = evolved && steroidCount >= 3 ? 40 : evolved ? 20 : 10;
+      enemyHP = Math.max(0, enemyHP - damage); isPlayerTurn = false;
+      log(`攻撃した！敵に${damage}ダメージ！`);
+
+      if (enemyHP <= 0) {
+        log(`${enemies[currentEnemyIndex].name}を倒した！EXP+20, レベル経験値+50`);
+        exp += 20;
+        levelExp += 50;
+        if (levelExp >= levelThreshold) {
+          level++;
+          levelExp = 0;
+          levelThreshold += 20;
+          playerHP += 10;
+          log(`🎉 レベルアップ！レベル: ${level} / HP+10`);
+        }
+        currentEnemyIndex++;
+        if (currentEnemyIndex < enemies.length) {
+          enemyHP = enemies[currentEnemyIndex].hp;
+          log(`➡ 次の敵が現れた：${enemies[currentEnemyIndex].name}`);
+        } else {
+          log("🎉 全ての敵を倒しました！");
+          enemyHP = 0;
+        }
+      }
+
+      updateUI(); if (!isPlayerTurn && enemyHP > 0) setTimeout(enemyAttack, 1000);
+    }
+
+    function eat() {
+      fullness = Math.min(100, fullness + 20);
+      fatigue = Math.max(0, fatigue - 10);
+      log("バニーはごはんをたべた！満腹度+20 / 疲労-10");
+      updateUI(); if (!isPlayerTurn && enemyHP > 0) setTimeout(enemyAttack, 1000);
+    }
+
+    function train() {
+      exp += 10;
+      fatigue += 15;
+      fullness = Math.max(0, fullness - 10);
+      log("トレーニングした！EXP+10 / 疲労+15 / 満腹度-10");
+      updateUI(); if (!isPlayerTurn && enemyHP > 0) setTimeout(enemyAttack, 1000);
+    }
+
+    function rest() {
+      fatigue = Math.max(0, fatigue - 20);
+      log("休憩した！疲労-20");
+      updateUI(); if (!isPlayerTurn && enemyHP > 0) setTimeout(enemyAttack, 1000);
+    }
+
+    function useSteroid() {
+      steroidCount++;
+      exp += 30;
+      fatigue += steroidCount * 10;
+      fullness = Math.max(0, fullness - steroidCount * 5);
+      log(`ステロイド使用！EXP+30、副作用累積（疲労+${steroidCount * 10} / 満腹-${steroidCount * 5}）`);
+      updateUI(); if (!isPlayerTurn && enemyHP > 0) setTimeout(enemyAttack, 1000);
+    }
+
+    updateUI(); if (!isPlayerTurn && enemyHP > 0) setTimeout(enemyAttack, 1000);
+  
+let isPlayerTurn = true;
+
+function enemyAttack() {
+  const damage = enemies[currentEnemyIndex].atk;
+  playerHP = Math.max(0, playerHP - damage);
+  log(`${enemies[currentEnemyIndex].name}の反撃！${damage}ダメージ！`);
+  isPlayerTurn = true;
+  updateUI();
+}
+</script>
+
+</body>
+</html>
