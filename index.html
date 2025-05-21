@@ -6,6 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>バニー育成 & バトル</title>
   <style>
+#evolution-overlay, #ending-message {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.8); color: white; display: none;
+  justify-content: center; align-items: center; font-size: 24px;
+  z-index: 999;
+}
+
     body { font-family: sans-serif; background-color: #f8f8f8; padding: 20px; text-align: center; }
     .btn { margin: 10px; padding: 10px 20px; font-size: 16px; }
     #log { margin-top: 20px; white-space: pre-line; border-top: 1px solid #ccc; padding-top: 10px; }
@@ -21,7 +28,11 @@
     <h2>育成モード</h2>
     <img id="bunny-img" src="bunny_softred.png" alt="バニー">
     <p>EXP: <span id="exp">0</span> / Fullness: <span id="fullness">100</span> / Fatigue: <span id="fatigue">0</span> / Steroids: <span id="steroids">0</span></p>
-    <button class="btn" onclick="eat()">食べる</button>
+    
+    <button class="btn" onclick="eatCarrot()">🥕 にんじん</button>
+    <button class="btn" onclick="eatSteak()">🥩 ステーキ</button>
+    <button class="btn" onclick="eatSalad()">🥗 サラダ</button>
+    
     <button class="btn" onclick="rest()">休憩</button>
     <button class="btn" onclick="useSteroid()">ステロイド</button>
     <button class="btn" onclick="goToBattle()">▶️ トレーニング（バトルへ）</button>
@@ -39,7 +50,24 @@
     <button class="btn" onclick="goTo育成()">◀️ 育成画面へ戻る</button>
   </div>
 
-  <div id="log"></div>
+  <button class="btn" onclick="saveGame()">💾 セーブ</button>
+<button class="btn" onclick="toggleStatus()">📊 ステータスを見る</button>
+
+<div id="status-screen" style="display:none; margin-top:20px; background:#eef; padding:10px; border-radius:8px;">
+  <h3>バニーステータス</h3>
+  <p>レベル: <span id="status-level"></span></p>
+  <p>EXP: <span id="status-exp"></span></p>
+  <p>満腹度: <span id="status-fullness"></span></p>
+  <p>疲労: <span id="status-fatigue"></span></p>
+  <p>HP: <span id="status-hp"></span></p>
+  <p>進化状態: <span id="status-evolved"></span></p>
+  <p>ステロイド使用: <span id="status-steroids"></span> 回</p>
+  <p>現在の状態: <span id="status-condition"></span></p>
+  <h4>育成履歴</h4>
+  <div id="history-log" style="background:#fff; padding:10px; height:120px; overflow:auto;"></div>
+</div>
+
+<div id="log" style="min-height:120px; border-top:1px solid #ccc; margin-top:20px; padding-top:10px; background:#fff;"></div>
 
   <script>
     let playerHP = 100;
@@ -70,6 +98,19 @@
       document.getElementById('exp').innerText = exp;
       document.getElementById('fullness').innerText = fullness;
       document.getElementById('fatigue').innerText = fatigue;
+
+  let bunnyImg = "bunny_softred.png";
+  if (evolved && steroidCount >= 3) {
+    bunnyImg = "rage_bunny.png";
+  } else if (evolved) {
+    bunnyImg = "angry_bunny_softred.png";
+  } else if (fullness === 0 && fatigue >= 50) {
+    bunnyImg = "bunny_tired.png";
+  } else if (fullness <= 50) {
+    bunnyImg = "bunny_hungry.png";
+  }
+  document.getElementById("bunny-img").src = bunnyImg;
+
       document.getElementById('steroids').innerText = steroidCount;
       document.getElementById('level').innerText = level;
       document.getElementById('levelExp').innerText = levelExp;
@@ -92,11 +133,11 @@
       if (!isPlayerTurn || playerHP <= 0 || enemyHP <= 0) return;
       let damage = evolved && steroidCount >= 3 ? 40 : evolved ? 20 : 10;
       enemyHP = Math.max(0, enemyHP - damage);
-      log(`攻撃した！敵に${damage}ダメージ！`);
+      playSE("se-attack"); log(`攻撃した！敵に${damage}ダメージ！`);
       isPlayerTurn = false;
 
       if (enemyHP <= 0) {
-        log(`${enemies[currentEnemyIndex].name}を倒した！EXP+20, レベル経験値+50`);
+        playSE("se-win"); log(`${enemies[currentEnemyIndex].name}を倒した！EXP+20, レベル経験値+50`); historyLog.push(`💥 ${enemies[currentEnemyIndex].name} を倒した`);
         exp += 20;
         levelExp += 50;
         if (levelExp >= levelThreshold) {
@@ -111,12 +152,22 @@
           enemyHP = enemies[currentEnemyIndex].hp;
           log(`➡ 次の敵が現れた：${enemies[currentEnemyIndex].name}`);
         } else {
-          log("🎉 全ての敵を倒しました！");
+          log("🎉 全ての敵を倒しました！"); document.getElementById("ending-message").style.display = "flex"; playSE("se-win");
           enemyHP = 0;
         }
       }
 
-      updateUI();
+      
+    if (fullness === 0 && fatigue >= 50) {
+      if (!log.includes("😵 バニーはぐったりしている…")) {
+        log("😵 バニーはぐったりしている…何もできない"); historyLog.push("😵 バニーがぐったりした");
+      }
+      playerHP = Math.max(0, playerHP - 10);
+    } else if (fatigue < 50 && fullness > 0 && log.includes("😵 バニーはぐったりしている…")) {
+      log("💡 バニーは元気を取り戻した！");
+    }
+    updateUI();
+    
       if (enemyHP > 0) setTimeout(enemyAttack, 1000);
     }
 
@@ -125,20 +176,50 @@
       playerHP = Math.max(0, playerHP - damage);
       log(`${enemies[currentEnemyIndex].name}の反撃！${damage}ダメージ！`);
       isPlayerTurn = true;
-      updateUI();
+      
+    if (fullness === 0 && fatigue >= 50) {
+      if (!log.includes("😵 バニーはぐったりしている…")) {
+        log("😵 バニーはぐったりしている…何もできない"); historyLog.push("😵 バニーがぐったりした");
+      }
+      playerHP = Math.max(0, playerHP - 10);
+    } else if (fatigue < 50 && fullness > 0 && log.includes("😵 バニーはぐったりしている…")) {
+      log("💡 バニーは元気を取り戻した！");
+    }
+    updateUI();
+    
     }
 
     function eat() {
       fullness = Math.min(100, fullness + 20);
       fatigue = Math.max(0, fatigue - 10);
       log("バニーはごはんをたべた！満腹度+20 / 疲労-10");
-      updateUI();
+      
+    if (fullness === 0 && fatigue >= 50) {
+      if (!log.includes("😵 バニーはぐったりしている…")) {
+        log("😵 バニーはぐったりしている…何もできない"); historyLog.push("😵 バニーがぐったりした");
+      }
+      playerHP = Math.max(0, playerHP - 10);
+    } else if (fatigue < 50 && fullness > 0 && log.includes("😵 バニーはぐったりしている…")) {
+      log("💡 バニーは元気を取り戻した！");
+    }
+    updateUI();
+    
     }
 
     function rest() {
       fatigue = Math.max(0, fatigue - 20);
       log("休憩した！疲労-20");
-      updateUI();
+      
+    if (fullness === 0 && fatigue >= 50) {
+      if (!log.includes("😵 バニーはぐったりしている…")) {
+        log("😵 バニーはぐったりしている…何もできない"); historyLog.push("😵 バニーがぐったりした");
+      }
+      playerHP = Math.max(0, playerHP - 10);
+    } else if (fatigue < 50 && fullness > 0 && log.includes("😵 バニーはぐったりしている…")) {
+      log("💡 バニーは元気を取り戻した！");
+    }
+    updateUI();
+    
     }
 
     function useSteroid() {
@@ -147,7 +228,17 @@
       fatigue += steroidCount * 10;
       fullness = Math.max(0, fullness - steroidCount * 5);
       log(`ステロイド使用！EXP+30、副作用累積（疲労+${steroidCount * 10} / 満腹-${steroidCount * 5}）`);
-      updateUI();
+      
+    if (fullness === 0 && fatigue >= 50) {
+      if (!log.includes("😵 バニーはぐったりしている…")) {
+        log("😵 バニーはぐったりしている…何もできない"); historyLog.push("😵 バニーがぐったりした");
+      }
+      playerHP = Math.max(0, playerHP - 10);
+    } else if (fatigue < 50 && fullness > 0 && log.includes("😵 バニーはぐったりしている…")) {
+      log("💡 バニーは元気を取り戻した！");
+    }
+    updateUI();
+    
     }
 
     function goToBattle() {
@@ -156,17 +247,172 @@
       fullness = Math.max(0, fullness - 10);
       document.getElementById("育成画面").style.display = "none";
       document.getElementById("battle-screen").style.display = "block";
+switchBGM("バトル");
       log("トレーニングスタート！（EXP+10 / 疲労+15 / 満腹度-10）");
-      updateUI();
+      
+    if (fullness === 0 && fatigue >= 50) {
+      if (!log.includes("😵 バニーはぐったりしている…")) {
+        log("😵 バニーはぐったりしている…何もできない"); historyLog.push("😵 バニーがぐったりした");
+      }
+      playerHP = Math.max(0, playerHP - 10);
+    } else if (fatigue < 50 && fullness > 0 && log.includes("😵 バニーはぐったりしている…")) {
+      log("💡 バニーは元気を取り戻した！");
+    }
+    updateUI();
+    
     }
 
     function goTo育成() {
       document.getElementById("battle-screen").style.display = "none";
       document.getElementById("育成画面").style.display = "block";
-      updateUI();
+switchBGM("育成");
+      
+    if (fullness === 0 && fatigue >= 50) {
+      if (!log.includes("😵 バニーはぐったりしている…")) {
+        log("😵 バニーはぐったりしている…何もできない"); historyLog.push("😵 バニーがぐったりした");
+      }
+      playerHP = Math.max(0, playerHP - 10);
+    } else if (fatigue < 50 && fullness > 0 && log.includes("😵 バニーはぐったりしている…")) {
+      log("💡 バニーは元気を取り戻した！");
+    }
+    updateUI();
+    
     }
 
-    goTo育成();
+    
+// 満腹度の自動減少と空腹警告（10秒ごと）
+setInterval(() => {
+  if (document.getElementById("育成画面").style.display === "block") {
+    fullness = Math.max(0, fullness - 5);
+    log("⏰ 時間が経過… 満腹度 -5");
+    if (fullness <= 30) {
+      log("🍽 バニー「お腹すいたよ〜！」");
+    }
+    
+    if (fullness === 0 && fatigue >= 50) {
+      if (!log.includes("😵 バニーはぐったりしている…")) {
+        log("😵 バニーはぐったりしている…何もできない"); historyLog.push("😵 バニーがぐったりした");
+      }
+      playerHP = Math.max(0, playerHP - 10);
+    } else if (fatigue < 50 && fullness > 0 && log.includes("😵 バニーはぐったりしている…")) {
+      log("💡 バニーは元気を取り戻した！");
+    }
+    updateUI();
+    
+  }
+}, 10000);
+
+
+function eatCarrot() {
+  if (fullness === 0 && fatigue >= 50) return log("😵 動けない…休ませてあげよう");
+  fullness = Math.min(100, fullness + 10);
+  playSE("se-eat"); log("🥕 にんじんを食べた！満腹+10"); historyLog.push("🥕 にんじんを食べた");
+  updateUI();
+}
+
+function eatSteak() {
+  if (fullness === 0 && fatigue >= 50) return log("😵 動けない…休ませてあげよう");
+  fullness = Math.min(100, fullness + 25);
+  fatigue += 5;
+  playSE("se-eat"); log("🥩 ステーキを食べた！満腹+25 / 疲労+5"); historyLog.push("🥩 ステーキを食べた");
+  updateUI();
+}
+
+function eatSalad() {
+  if (fullness === 0 && fatigue >= 50) return log("😵 動けない…休ませてあげよう");
+  fullness = Math.min(100, fullness + 15);
+  fatigue = Math.max(0, fatigue - 5);
+  playSE("se-eat"); log("🥗 サラダを食べた！満腹+15 / 疲労-5"); historyLog.push("🥗 サラダを食べた");
+  updateUI();
+}
+
+
+function saveGame() {
+  const saveData = {
+    exp, fullness, fatigue, level, playerHP, evolved, steroidCount
+  };
+  localStorage.setItem("bunnyGameSave", JSON.stringify(saveData));
+  log("✅ ゲーム進行を保存しました");
+}
+
+function loadGame() {
+  const saved = localStorage.getItem("bunnyGameSave");
+  if (saved) {
+    const data = JSON.parse(saved);
+    exp = data.exp || 0;
+    fullness = data.fullness || 100;
+    fatigue = data.fatigue || 0;
+    level = data.level || 1;
+    playerHP = data.playerHP || 100;
+    evolved = data.evolved || false;
+    steroidCount = data.steroidCount || 0;
+    log("🔄 セーブデータを読み込みました");
+    updateUI();
+  }
+}
+window.onload = loadGame;
+
+
+const historyLog = [];
+
+function toggleStatus() {
+  const screen = document.getElementById("status-screen");
+  if (screen.style.display === "none") {
+    updateStatusUI();
+    screen.style.display = "block";
+  } else {
+    screen.style.display = "none";
+  }
+}
+
+function updateStatusUI() {
+  document.getElementById("status-level").innerText = level;
+  document.getElementById("status-exp").innerText = exp;
+  document.getElementById("status-fullness").innerText = fullness;
+  document.getElementById("status-fatigue").innerText = fatigue;
+  document.getElementById("status-hp").innerText = playerHP;
+  document.getElementById("status-evolved").innerText = evolved ? (steroidCount >= 3 ? "暴走バニー" : "アングリーバニー") : "未進化";
+  document.getElementById("status-steroids").innerText = steroidCount;
+  const cond = (fullness === 0 && fatigue >= 50) ? "ぐったり" : (fullness <= 50 ? "お腹すいた" : "元気");
+  document.getElementById("status-condition").innerText = cond;
+
+  document.getElementById("history-log").innerHTML = historyLog.map(x => "<div>" + x + "</div>").join("");
+}
+
+
+function playSE(id) {
+  const se = document.getElementById(id);
+  if (se) {
+    se.currentTime = 0;
+    se.play();
+  }
+}
+
+function switchBGM(mode) {
+  const peaceful = document.getElementById("bgm-peaceful");
+  const battle = document.getElementById("bgm-battle");
+  if (mode === "育成") {
+    battle.pause();
+    peaceful.currentTime = 0;
+    peaceful.play();
+  } else {
+    peaceful.pause();
+    battle.currentTime = 0;
+    battle.play();
+  }
+}
+
+goTo育成();
+
   </script>
+
+<audio id="bgm-peaceful" loop src="bgm_peaceful.mp3"></audio>
+<audio id="bgm-battle" loop src="bgm_battle.mp3"></audio>
+<audio id="se-attack" src="attack.mp3"></audio>
+<audio id="se-eat" src="eat.mp3"></audio>
+<audio id="se-win" src="win.mp3"></audio>
+
+<div id="evolution-overlay">✨ バニーは進化している… ✨</div>
+<div id="ending-message">🎉 バニーは世界を救った！</div>
 </body>
 </html>
