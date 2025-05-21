@@ -4,32 +4,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>バニーの進化 - ラウンドバトル</title>
+  <title>バニー育成 & バトル</title>
   <style>
     body { font-family: sans-serif; background-color: #f8f8f8; padding: 20px; text-align: center; }
     .btn { margin: 10px; padding: 10px 20px; font-size: 16px; }
     #log { margin-top: 20px; white-space: pre-line; border-top: 1px solid #ccc; padding-top: 10px; }
     #bunny-img, #enemy-img { width: 150px; margin-bottom: 20px; }
+    #battle-screen, #育成画面 { display: none; }
   </style>
 </head>
 <body>
-  <h1>バニーの進化</h1>
-  <p>レベル: <span id="level">1</span> / EXP: <span id="levelExp">0</span> / 次のレベルまで: <span id="levelThreshold">50</span></p>
-  <img id="bunny-img" src="bunny_softred.png" alt="バニー">
-  <div>
+  <h1>バニー育成＆バトル</h1>
+
+  <!-- 育成画面 -->
+  <div id="育成画面">
+    <h2>育成モード</h2>
+    <img id="bunny-img" src="bunny_softred.png" alt="バニー">
+    <p>EXP: <span id="exp">0</span> / Fullness: <span id="fullness">100</span> / Fatigue: <span id="fatigue">0</span> / Steroids: <span id="steroids">0</span></p>
+    <button class="btn" onclick="eat()">食べる</button>
+    <button class="btn" onclick="rest()">休憩</button>
+    <button class="btn" onclick="useSteroid()">ステロイド</button>
+    <button class="btn" onclick="goToBattle()">▶️ トレーニング（バトルへ）</button>
+    <p id="evolutionStatus"></p>
+  </div>
+
+  <!-- バトル画面 -->
+  <div id="battle-screen">
+    <h2>バトルモード</h2>
+    <p>レベル: <span id="level">1</span> / EXP: <span id="levelExp">0</span> / 次のレベルまで: <span id="levelThreshold">50</span></p>
     <p>HP: <span id="playerHP">100</span> / Enemy: <span id="enemyName">スライム</span> / HP: <span id="enemyHP">50</span></p>
     <img id="enemy-img" src="slime.png" alt="敵">
     <p id="enemyMsg">ぷるぷるしてやるぞ！</p>
     <button class="btn" onclick="attack()">攻撃</button>
-    <button class="btn" onclick="eat()">食べる</button>
-    <button class="btn" onclick="train()">トレーニング</button>
-    <button class="btn" onclick="rest()">休憩</button>
-    <button class="btn" onclick="useSteroid()">ステロイド</button>
+    <button class="btn" onclick="goTo育成()">◀️ 育成画面へ戻る</button>
   </div>
-  <div>
-    <p>EXP: <span id="exp">0</span> / Fullness: <span id="fullness">100</span> / Fatigue: <span id="fatigue">0</span> / ステロイド使用: <span id="steroids">0</span></p>
-    <p id="evolutionStatus"></p>
-  </div>
+
   <div id="log"></div>
 
   <script>
@@ -42,6 +51,7 @@
     let level = 1;
     let levelExp = 0;
     let levelThreshold = 50;
+    let isPlayerTurn = true;
     let currentEnemyIndex = 0;
 
     const enemies = [
@@ -78,17 +88,12 @@
       }
     }
 
-    function log(msg) {
-      document.getElementById('log').innerText += msg + "\n";
-    }
-
-    
-function attack() {
-  if (!isPlayerTurn || playerHP <= 0 || enemyHP <= 0) return;
-
+    function attack() {
+      if (!isPlayerTurn || playerHP <= 0 || enemyHP <= 0) return;
       let damage = evolved && steroidCount >= 3 ? 40 : evolved ? 20 : 10;
-      enemyHP = Math.max(0, enemyHP - damage); isPlayerTurn = false;
+      enemyHP = Math.max(0, enemyHP - damage);
       log(`攻撃した！敵に${damage}ダメージ！`);
+      isPlayerTurn = false;
 
       if (enemyHP <= 0) {
         log(`${enemies[currentEnemyIndex].name}を倒した！EXP+20, レベル経験値+50`);
@@ -111,28 +116,29 @@ function attack() {
         }
       }
 
-      updateUI(); if (!isPlayerTurn && enemyHP > 0) setTimeout(enemyAttack, 1000);
+      updateUI();
+      if (enemyHP > 0) setTimeout(enemyAttack, 1000);
+    }
+
+    function enemyAttack() {
+      const damage = enemies[currentEnemyIndex].atk;
+      playerHP = Math.max(0, playerHP - damage);
+      log(`${enemies[currentEnemyIndex].name}の反撃！${damage}ダメージ！`);
+      isPlayerTurn = true;
+      updateUI();
     }
 
     function eat() {
       fullness = Math.min(100, fullness + 20);
       fatigue = Math.max(0, fatigue - 10);
       log("バニーはごはんをたべた！満腹度+20 / 疲労-10");
-      updateUI(); if (!isPlayerTurn && enemyHP > 0) setTimeout(enemyAttack, 1000);
-    }
-
-    function train() {
-      exp += 10;
-      fatigue += 15;
-      fullness = Math.max(0, fullness - 10);
-      log("トレーニングした！EXP+10 / 疲労+15 / 満腹度-10");
-      updateUI(); if (!isPlayerTurn && enemyHP > 0) setTimeout(enemyAttack, 1000);
+      updateUI();
     }
 
     function rest() {
       fatigue = Math.max(0, fatigue - 20);
       log("休憩した！疲労-20");
-      updateUI(); if (!isPlayerTurn && enemyHP > 0) setTimeout(enemyAttack, 1000);
+      updateUI();
     }
 
     function useSteroid() {
@@ -141,21 +147,26 @@ function attack() {
       fatigue += steroidCount * 10;
       fullness = Math.max(0, fullness - steroidCount * 5);
       log(`ステロイド使用！EXP+30、副作用累積（疲労+${steroidCount * 10} / 満腹-${steroidCount * 5}）`);
-      updateUI(); if (!isPlayerTurn && enemyHP > 0) setTimeout(enemyAttack, 1000);
+      updateUI();
     }
 
-    updateUI(); if (!isPlayerTurn && enemyHP > 0) setTimeout(enemyAttack, 1000);
-  
-let isPlayerTurn = true;
+    function goToBattle() {
+      exp += 10;
+      fatigue += 15;
+      fullness = Math.max(0, fullness - 10);
+      document.getElementById("育成画面").style.display = "none";
+      document.getElementById("battle-screen").style.display = "block";
+      log("トレーニングスタート！（EXP+10 / 疲労+15 / 満腹度-10）");
+      updateUI();
+    }
 
-function enemyAttack() {
-  const damage = enemies[currentEnemyIndex].atk;
-  playerHP = Math.max(0, playerHP - damage);
-  log(`${enemies[currentEnemyIndex].name}の反撃！${damage}ダメージ！`);
-  isPlayerTurn = true;
-  updateUI();
-}
-</script>
+    function goTo育成() {
+      document.getElementById("battle-screen").style.display = "none";
+      document.getElementById("育成画面").style.display = "block";
+      updateUI();
+    }
 
+    goTo育成();
+  </script>
 </body>
 </html>
