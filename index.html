@@ -3,19 +3,19 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>バニー中央歩き背景スクロール</title>
+  <title>バニー中央歩行（修正版）</title>
   <style>
     body {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background-color: #88ccee;
+      background-color: #cceeff;
     }
     #game {
       position: relative;
       width: 100vw;
       height: 100vh;
-      background: repeating-linear-gradient(to right, #aadfaa 0 50px, #88ccee 50px 100px);
+      background: repeating-linear-gradient(to right, #aadeaa 0 50px, #cceeff 50px 100px);
       animation: scrollBackground 10s linear infinite;
     }
     @keyframes scrollBackground {
@@ -44,7 +44,7 @@
     setInterval(() => {
       frame = (frame + 1) % 2;
       bunny.src = frames[frame];
-    }, 300);
+    }, 300); // 0.3秒ごとに切り替え
   </script>
 </body>
 </html>
