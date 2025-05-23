@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>バニー育成ゲーム - フルバージョン</title>
+  <style>
+    body { font-family: sans-serif; background: #f5f5f5; text-align: center; padding: 20px; }
+    .btn { margin: 5px; padding: 10px 20px; font-size: 16px; }
+    #log { white-space: pre-line; background: #fff; border: 1px solid #ccc; padding: 10px; margin-top: 20px; max-height: 200px; overflow-y: scroll; }
+  </style>
+</head>
+<body>
+  <h1>バニー育成ゲーム</h1>
+  <img id="bunny" src="bunny_softred.png" width="150">
+  <div>
+    <p>HP: <span id="hp">100</span> / 満腹: <span id="fullness">100</span> / 疲労: <span id="fatigue">0</span> / EXP: <span id="exp">0</span></p>
+  </div>
+  <div>
+    <button class="btn" onclick="attack()">攻撃</button>
+    <button class="btn" onclick="eat()">ごはん</button>
+    <button class="btn" onclick="train()">トレーニング</button>
+    <button class="btn" onclick="rest()">休憩</button>
+  </div>
+  <div id="log"></div>
+
+  <script>
+    let hp = 100, fullness = 100, fatigue = 0, exp = 0;
+    let evolved = false;
+
+    function updateUI() {
+      document.getElementById('hp').innerText = hp;
+      document.getElementById('fullness').innerText = fullness;
+      document.getElementById('fatigue').innerText = fatigue;
+      document.getElementById('exp').innerText = exp;
+      if (evolved) {
+        document.getElementById('bunny').src = 'angry_bunny_softred.png';
+      } else if (fullness <= 30) {
+        document.getElementById('bunny').src = 'bunny_hungry.png';
+      } else if (fatigue >= 70) {
+        document.getElementById('bunny').src = 'bunny_tired.png';
+      } else {
+        document.getElementById('bunny').src = 'bunny_softred.png';
+      }
+    }
+
+    function log(msg) {
+      document.getElementById('log').innerText += msg + "\n";
+    }
+
+    function attack() {
+      exp += 10;
+      log("バニーは攻撃した！EXP+10");
+      if (!evolved && exp >= 50 && fullness > 50 && fatigue < 40) {
+        evolved = true;
+        log("🔥 バニーは進化した！");
+      }
+      updateUI();
+    }
+
+    function eat() {
+      fullness = Math.min(100, fullness + 20);
+      fatigue = Math.max(0, fatigue - 10);
+      log("🍚 ごはんを食べた！満腹+20 疲労-10");
+      updateUI();
+    }
+
+    function train() {
+      exp += 15;
+      fullness -= 15;
+      fatigue += 20;
+      log("🏋️‍♂️ トレーニング！EXP+15 満腹-15 疲労+20");
+      updateUI();
+    }
+
+    function rest() {
+      fatigue = Math.max(0, fatigue - 30);
+      log("🛏️ 休憩して疲労-30");
+      updateUI();
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>
