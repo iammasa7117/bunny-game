@@ -3,14 +3,9 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>バニー中央歩行（修正版）</title>
+  <title>バニー冒険イベント</title>
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background-color: #cceeff;
-    }
+    body { margin: 0; padding: 0; overflow: hidden; background-color: #cceeff; }
     #game {
       position: relative;
       width: 100vw;
@@ -29,22 +24,42 @@
       transform: translateX(-50%);
       height: 150px;
     }
+    #event {
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 120px;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div id="game">
     <img id="bunny" src="bunny_walk_1.png" />
+    <img id="event" src="" />
   </div>
 
   <script>
     const bunny = document.getElementById("bunny");
+    const eventImage = document.getElementById("event");
     const frames = ["bunny_walk_1.png", "bunny_walk_2.png"];
     let frame = 0;
 
     setInterval(() => {
       frame = (frame + 1) % 2;
       bunny.src = frames[frame];
-    }, 300); // 0.3秒ごとに切り替え
+    }, 300);
+
+    const events = ["slime_1.png", "slime_2.png", "treasure.png"];
+    function triggerEvent() {
+      const chosen = events[Math.floor(Math.random() * events.length)];
+      eventImage.src = chosen;
+      eventImage.style.display = "block";
+      setTimeout(() => { eventImage.style.display = "none"; }, 3000);
+    }
+
+    setInterval(triggerEvent, 5000);
   </script>
 </body>
 </html>
