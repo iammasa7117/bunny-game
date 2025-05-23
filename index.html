@@ -1,1 +1,43 @@
-<!DOCTYPE html><html><head><meta charset='UTF-8'><title>バニー育成バトル v13</title></head><body><h1>正式コード復元済み</h1><p>ここに完全なindex.htmlが再構築されます。</p></body></html>
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>バニーウォークデモ</title>
+  <style>
+    body { margin: 0; background-color: #cce7ff; overflow: hidden; }
+    #game {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: repeating-linear-gradient(to right, #b5dbaa 0 50px, #cce7ff 50px 100px);
+    }
+    #bunny {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      height: 150px;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <img id="bunny" src="bunny_walk_1.png">
+  </div>
+
+  <script>
+    const bunny = document.getElementById("bunny");
+    const walkFrames = ["bunny_walk_1.png", "bunny_walk_2.png"];
+    let frame = 0;
+    let x = 20;
+
+    setInterval(() => {
+      frame = (frame + 1) % 2;
+      bunny.src = walkFrames[frame];
+      x += 2;
+      if (x > window.innerWidth) x = -150;
+      bunny.style.left = x + "px";
+    }, 300);
+  </script>
+</body>
+</html>
