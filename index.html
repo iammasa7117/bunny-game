@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>中央モンスター + 上部びっくりマーク</title>
+  <title>敵 or 宝箱 イベント分岐</title>
   <style>
     body {
       margin: 0;
@@ -29,12 +29,13 @@
       left: 50%;
       transform: translateX(-50%);
     }
-    #monster {
+    #eventImage {
       position: absolute;
       width: 25vw;
       bottom: 30%;
       left: 50%;
       transform: translateX(-50%);
+      display: none;
     }
     #alert {
       position: absolute;
@@ -44,6 +45,7 @@
       transform: translateX(-50%);
       animation: bounce 1s infinite;
       cursor: pointer;
+      display: none;
     }
     @keyframes bounce {
       0%, 100% { transform: translateX(-50%) translateY(0); }
@@ -54,13 +56,46 @@
 <body>
   <div id="game">
     <img id="bunny" src="bunny_walk_1.png" />
-    <img id="monster" src="bunny_walk_2.png" />
+    <img id="eventImage" src="" />
     <img id="alert" src="alert.png" onclick="triggerEvent()" />
   </div>
   <script>
+    const bunny = document.getElementById("bunny");
+    const eventImage = document.getElementById("eventImage");
+    const alertImg = document.getElementById("alert");
+
+    const eventOptions = [
+      { src: "monster.png", message: "敵が現れた！" },
+      { src: "treasure.png", message: "宝箱を見つけた！" }
+    ];
+
     function triggerEvent() {
-      alert("イベント：モンスター出現！");
+      alertImg.style.display = "none";
+      const event = eventOptions[Math.floor(Math.random() * eventOptions.length)];
+      eventImage.src = event.src;
+      eventImage.style.display = "block";
+      alert(event.message);
+      setTimeout(() => {
+        eventImage.style.display = "none";
+        scheduleNextEvent();
+      }, 3000);
     }
+
+    function scheduleNextEvent() {
+      const delay = Math.floor(Math.random() * 5000) + 3000;
+      setTimeout(() => {
+        alertImg.style.display = "block";
+      }, delay);
+    }
+
+    scheduleNextEvent();
+
+    const frames = ["bunny_walk_1.png", "bunny_walk_2.png"];
+    let frame = 0;
+    setInterval(() => {
+      frame = (frame + 1) % 2;
+      bunny.src = frames[frame];
+    }, 300);
   </script>
 </body>
 </html>
