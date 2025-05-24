@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>バニー中央修正済</title>
+  <title>中央モンスター + 上部びっくりマーク</title>
   <style>
     body {
       margin: 0;
@@ -29,10 +29,17 @@
       left: 50%;
       transform: translateX(-50%);
     }
+    #monster {
+      position: absolute;
+      width: 25vw;
+      bottom: 30%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
     #alert {
       position: absolute;
       width: 8vw;
-      bottom: 50%;
+      bottom: 52%;
       left: 50%;
       transform: translateX(-50%);
       animation: bounce 1s infinite;
@@ -47,19 +54,12 @@
 <body>
   <div id="game">
     <img id="bunny" src="bunny_walk_1.png" />
+    <img id="monster" src="bunny_walk_2.png" />
     <img id="alert" src="alert.png" onclick="triggerEvent()" />
   </div>
   <script>
-    const bunny = document.getElementById("bunny");
-    const frames = ["bunny_walk_1.png", "bunny_walk_2.png"];
-    let frame = 0;
-    setInterval(() => {
-      frame = (frame + 1) % 2;
-      bunny.src = frames[frame];
-    }, 300);
-
     function triggerEvent() {
-      alert("びっくりマーク：イベント発生！");
+      alert("イベント：モンスター出現！");
     }
   </script>
 </body>
