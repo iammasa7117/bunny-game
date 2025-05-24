@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>敵 or 宝箱 イベント分岐</title>
+  <title>宝箱イベント</title>
   <style>
     body {
       margin: 0;
@@ -29,10 +29,27 @@
       left: 50%;
       transform: translateX(-50%);
     }
-    #eventImage {
+    #monster {
       position: absolute;
       width: 25vw;
       bottom: 30%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+    }
+    #treasure {
+      position: absolute;
+      width: 25vw;
+      bottom: 30%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      cursor: pointer;
+    }
+    #item {
+      position: absolute;
+      width: 15vw;
+      bottom: 55%;
       left: 50%;
       transform: translateX(-50%);
       display: none;
@@ -56,27 +73,41 @@
 <body>
   <div id="game">
     <img id="bunny" src="bunny_walk_1.png" />
-    <img id="eventImage" src="" />
+    <img id="monster" src="monster.png" />
+    <img id="treasure" src="treasure.png" onclick="openTreasure()" />
+    <img id="item" src="item.png" />
     <img id="alert" src="alert.png" onclick="triggerEvent()" />
   </div>
   <script>
-    const bunny = document.getElementById("bunny");
-    const eventImage = document.getElementById("eventImage");
     const alertImg = document.getElementById("alert");
-
-    const eventOptions = [
-      { src: "monster.png", message: "敵が現れた！" },
-      { src: "treasure.png", message: "宝箱を見つけた！" }
-    ];
+    const monster = document.getElementById("monster");
+    const treasure = document.getElementById("treasure");
+    const item = document.getElementById("item");
 
     function triggerEvent() {
       alertImg.style.display = "none";
-      const event = eventOptions[Math.floor(Math.random() * eventOptions.length)];
-      eventImage.src = event.src;
-      eventImage.style.display = "block";
-      alert(event.message);
+      const isTreasure = Math.random() < 0.5;
+      if (isTreasure) {
+        treasure.style.display = "block";
+        monster.style.display = "none";
+      } else {
+        monster.style.display = "block";
+        treasure.style.display = "none";
+        alert("敵が現れた！");
+        setTimeout(() => {
+          monster.style.display = "none";
+          scheduleNextEvent();
+        }, 3000);
+      }
+    }
+
+    function openTreasure() {
+      treasure.src = "treasure_open.png";
+      item.style.display = "block";
       setTimeout(() => {
-        eventImage.style.display = "none";
+        treasure.style.display = "none";
+        item.style.display = "none";
+        treasure.src = "treasure.png";
         scheduleNextEvent();
       }, 3000);
     }
@@ -90,6 +121,7 @@
 
     scheduleNextEvent();
 
+    const bunny = document.getElementById("bunny");
     const frames = ["bunny_walk_1.png", "bunny_walk_2.png"];
     let frame = 0;
     setInterval(() => {
