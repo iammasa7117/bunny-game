@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>バニー歩行 + びっくりマークイベント</title>
+  <title>バニー中央修正済</title>
   <style>
     body {
       margin: 0;
@@ -24,15 +24,15 @@
     }
     #bunny {
       position: absolute;
-      width: 20vw;
-      bottom: 10%;
+      height: 20vh;
+      bottom: 30%;
       left: 50%;
       transform: translateX(-50%);
     }
     #alert {
       position: absolute;
       width: 8vw;
-      bottom: 35%;
+      bottom: 50%;
       left: 50%;
       transform: translateX(-50%);
       animation: bounce 1s infinite;
@@ -59,7 +59,7 @@
     }, 300);
 
     function triggerEvent() {
-      alert("びっくりマーク：敵 or 宝箱イベントが発生しました！");
+      alert("びっくりマーク：イベント発生！");
     }
   </script>
 </body>
