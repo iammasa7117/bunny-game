@@ -4,19 +4,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>スマホ中央バニー</title>
+  <title>バニー歩行 + びっくりマークイベント</title>
   <style>
     body {
       margin: 0;
-      padding: 0;
       overflow: hidden;
-      background-color: #cceeff;
+      background: linear-gradient(to bottom, #aadeaa, #cceeff);
     }
     #game {
       position: relative;
       width: 100vw;
       height: 100vh;
-      background: repeating-linear-gradient(to right, #aadeaa 0 50px, #cceeff 50px 100px);
+      background: repeating-linear-gradient(to right, #cceeff 0 50px, #aadeaa 50px 100px);
       animation: scrollBackground 10s linear infinite;
     }
     @keyframes scrollBackground {
@@ -25,18 +24,31 @@
     }
     #bunny {
       position: absolute;
-      height: 20vh;
-      bottom: 25%;
+      width: 20vw;
+      bottom: 10%;
       left: 50%;
       transform: translateX(-50%);
+    }
+    #alert {
+      position: absolute;
+      width: 10vw;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: bounce 1s infinite;
+      cursor: pointer;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-10px); }
     }
   </style>
 </head>
 <body>
   <div id="game">
     <img id="bunny" src="bunny_walk_1.png" />
+    <img id="alert" src="alert.png" onclick="triggerEvent()" />
   </div>
-
   <script>
     const bunny = document.getElementById("bunny");
     const frames = ["bunny_walk_1.png", "bunny_walk_2.png"];
@@ -45,6 +57,10 @@
       frame = (frame + 1) % 2;
       bunny.src = frames[frame];
     }, 300);
+
+    function triggerEvent() {
+      alert("びっくりマーク：敵 or 宝箱イベントが発生しました！");
+    }
   </script>
 </body>
 </html>
