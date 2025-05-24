@@ -155,6 +155,48 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
+
+<script>
+  let flashIndex = 0;
+  let flashTimer = null;
+
+  function triggerFlashEffect(callback) {
+    const flashImages = ['flash1.png', 'flash2.png'];
+    const flashOverlay = document.createElement('img');
+    flashOverlay.style.position = 'absolute';
+    flashOverlay.style.top = 0;
+    flashOverlay.style.left = 0;
+    flashOverlay.style.width = '100%';
+    flashOverlay.style.height = '100%';
+    flashOverlay.style.zIndex = 9999;
+    document.body.appendChild(flashOverlay);
+
+    let count = 0;
+    flashTimer = setInterval(() => {
+      flashOverlay.src = flashImages[flashIndex % 2];
+      flashIndex++;
+      count++;
+      if (count >= 6) {
+        clearInterval(flashTimer);
+        document.body.removeChild(flashOverlay);
+        if (callback) callback();
+      }
+    }, 400);
+  }
+
+  function handleEventTrigger() {
+    const isEnemy = Math.random() < 0.5;
+    if (isEnemy) {
+      triggerFlashEffect(() => {
+        alert("バトル画面に切り替わります！（仮）");
+        // ここでバトル画面に遷移させる処理を入れる予定
+      });
+    } else {
+      document.getElementById('treasure').style.display = 'block';
+    }
+  }
+</script>
+
 </body>
 
 </html>
