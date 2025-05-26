@@ -85,12 +85,19 @@
     const item = document.getElementById("item");
 
     function triggerEvent() {
-      alertImg.style.display = "none";
-      const isTreasure = Math.random() < 0.5;
-      if (isTreasure) {
-        treasure.style.display = "block";
-        monster.style.display = "none";
-      } else {
+  alertImg.style.display = "none";
+  const isTreasure = Math.random() < 0.5;
+
+  if (isTreasure) {
+    treasure.style.display = "block";
+    monster.style.display = "none";
+  } else {
+    // フラッシュ演出 → バトル画面へ
+    triggerFlashEffect(() => {
+      alert("バトル画面に切り替わります！（仮）");
+    });
+  }
+} else {
         monster.style.display = "block";
         treasure.style.display = "none";
         alert("敵が現れた！");
