@@ -3,113 +3,25 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bunny Game - TamaFi風</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bunny Web Game</title>
   <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background-color: #222;
-    }
-    #game {
-      width: 100vw;
-      height: 100vh;
-      background: linear-gradient(#444, #111);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-    .bunny, .alert, .monster, .treasure, .item {
-      position: absolute;
-    }
-    .alert {
-      width: 80px;
-      top: 40px;
-      left: calc(50% - 40px);
-    }
-    .monster, .treasure, .item {
-      width: 150px;
-      top: calc(50% - 75px);
-      left: calc(50% - 75px);
-    }
+    body { background: #111; color: #fff; text-align: center; font-family: sans-serif; }
+    img { max-width: 100px; margin: 10px; }
   </style>
 </head>
 <body>
-  <div id="game">
-    <img id="bunny" class="bunny" src="bunny_walk_1.png" width="120" />
-    <img id="alert" class="alert" src="alert.png" style="display: none;" />
-    <img id="monster" class="monster" src="monster.png" style="display: none;" />
-    <img id="treasure" class="treasure" src="treasure.png" style="display: none;" />
-    <img id="item" class="item" src="item.png" style="display: none;" />
+  <h1>Bunny Web Game Assets</h1>
+  <div id="gallery">
+    <img src="flash1.png" alt="flash1" />
+    <img src="flash2.png" alt="flash2" />
+    <img src="item.png" alt="item" />
+    <img src="treasure_open.png" alt="treasure_open" />
+    <img src="treasure.png" alt="treasure" />
+    <img src="monster.png" alt="monster" />
+    <img src="alert.png" alt="alert" />
+    <img src="bunny_walk_1.png" alt="bunny_walk_1" />
+    <img src="bunny_walk_2.png" alt="bunny_walk_2" />
   </div>
-
-  <script>
-    const bunny = document.getElementById("bunny");
-    const alertImg = document.getElementById("alert");
-    const monster = document.getElementById("monster");
-    const treasure = document.getElementById("treasure");
-    const item = document.getElementById("item");
-
-    let walkFrame = 1;
-    setInterval(() => {
-      walkFrame = walkFrame === 1 ? 2 : 1;
-      bunny.src = `bunny_walk_${walkFrame}.png`;
-    }, 300);
-
-    alertImg.addEventListener("click", triggerEvent);
-
-    function scheduleNextEvent() {
-      const time = 3000 + Math.random() * 5000;
-      setTimeout(() => {
-        alertImg.style.display = "block";
-      }, time);
-    }
-
-    function triggerEvent() {
-      alertImg.style.display = "none";
-      const isTreasure = Math.random() < 0.5;
-
-      if (isTreasure) {
-        treasure.src = "treasure.png";
-        treasure.style.display = "block";
-        setTimeout(() => {
-          treasure.src = "treasure_open.png";
-          item.style.display = "block";
-          setTimeout(() => {
-            treasure.style.display = "none";
-            item.style.display = "none";
-            scheduleNextEvent();
-          }, 3000);
-        }, 1000);
-      } else {
-        const flash = document.createElement("img");
-        flash.style.position = "absolute";
-        flash.style.width = "100vw";
-        flash.style.height = "100vh";
-        flash.style.top = "0";
-        flash.style.left = "0";
-        flash.style.zIndex = "10";
-        document.body.appendChild(flash);
-
-        let count = 0;
-        const flashInterval = setInterval(() => {
-          flash.src = count % 2 === 0 ? "flash1.png" : "flash2.png";
-          count++;
-          if (count >= 6) {
-            clearInterval(flashInterval);
-            document.body.removeChild(flash);
-            monster.style.display = "block";
-            setTimeout(() => {
-              monster.style.display = "none";
-              scheduleNextEvent();
-            }, 3000);
-          }
-        }, 200);
-      }
-    }
-
-    scheduleNextEvent();
-  </script>
 </body>
 </html>
