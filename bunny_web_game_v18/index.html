@@ -1,0 +1,93 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>バニーバトルゲーム</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; background-color: #f8f8f8; }
+    #game-screen { margin-top: 30px; }
+    img { max-width: 80%; height: auto; }
+    .hidden { display: none; }
+    #event-log { margin-top: 20px; }
+    button { margin-top: 10px; padding: 10px 20px; }
+  </style>
+</head>
+<body>
+  <h1>バニーバトルゲーム</h1>
+  <div id="game-screen">
+    <img id="bunny" src="bunny_walk_1.png" alt="バニー" />
+    <img id="alert" src="alert.png" alt="ビックリマーク" onclick="triggerEvent()" />
+    <div id="event-area" class="hidden">
+      <img id="flash" class="hidden" />
+      <div id="event-buttons" class="hidden">
+        <button onclick="startBattle()">バトル</button>
+        <button onclick="collectItem()">アイテムを拾う</button>
+      </div>
+      <div id="battle-area" class="hidden">
+        <img id="monster" src="monster.png" alt="モンスター" />
+        <button onclick="attack()">攻撃</button>
+        <p id="battle-log"></p>
+      </div>
+    </div>
+    <div id="item-area" class="hidden">
+      <img src="item.png" alt="アイテム" />
+      <p>アイテムを手に入れた！</p>
+    </div>
+  </div>
+  <div id="event-log"></div>
+
+  <script>
+    let enemyHP = 30;
+
+    function triggerEvent() {
+      document.getElementById('alert').classList.add('hidden');
+      document.getElementById('event-area').classList.remove('hidden');
+
+      const eventType = Math.random() < 0.5 ? 'monster' : 'item';
+      const flash = document.getElementById('flash');
+
+      flash.classList.remove('hidden');
+      flash.src = 'flash1.png';
+      setTimeout(() => {
+        flash.src = 'flash2.png';
+        setTimeout(() => {
+          flash.classList.add('hidden');
+          if (eventType === 'monster') {
+            document.getElementById('event-buttons').classList.remove('hidden');
+          } else {
+            document.getElementById('item-area').classList.remove('hidden');
+          }
+        }, 300);
+      }, 300);
+    }
+
+    function startBattle() {
+      document.getElementById('event-buttons').classList.add('hidden');
+      document.getElementById('battle-area').classList.remove('hidden');
+      enemyHP = 30;
+      document.getElementById('battle-log').textContent = "モンスターが現れた！";
+    }
+
+    function attack() {
+      const damage = 10;
+      enemyHP -= damage;
+      const log = document.getElementById('battle-log');
+      if (enemyHP > 0) {
+        log.textContent = `攻撃した！ モンスターのHP: ${enemyHP}`;
+      } else {
+        log.textContent = "モンスターを倒した！";
+        document.getElementById('battle-area').classList.add('hidden');
+        document.getElementById('alert').classList.remove('hidden');
+        document.getElementById('event-area').classList.add('hidden');
+      }
+    }
+
+    function collectItem() {
+      document.getElementById('item-area').classList.remove('hidden');
+      document.getElementById('event-buttons').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
